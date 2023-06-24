@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spyn Pro Classes</title>
+</head>
+<body>
+    <h1>Classes Info</h1>
+    {% for item in data %}
+    <div>
+        <p>Date: {{ item.date }}</p>
+        <p>Class Title: {{ item.class_title }}</p>
+        <p>Reserved Usernames: {{ item.reserved_usernames | join(", ") }}</p>
+        <p>Present Usernames: {{ item.present_usernames | join(", ") }}</p>
+        <hr>
+    </div>
+    {% endfor %}
+</body>
+</html>
