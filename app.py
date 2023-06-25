@@ -22,7 +22,7 @@ def save_attendance_data():
 @app.before_first_request
 def activate_job():
     scheduler = sched.scheduler(time.time, time.sleep)
-    scheduler.enter(0, 1, periodic, (scheduler, 3600, save_attendance_data))  # 3600 seconds = 1 hour
+    scheduler.enter(0, 1, periodic, (scheduler, 900, save_attendance_data))  # 900 seconds = 15 min
     t = threading.Thread(target=scheduler.run)
     t.start()
 
