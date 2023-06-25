@@ -3,18 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Load Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
     <title>Spyn Pro Classes</title>
 </head>
 <body>
-    <h1>Classes Info</h1>
-    {% for item in data %}
-    <div>
-        <p>Date: {{ item.date }}</p>
-        <p>Class Title: {{ item.class_title }}</p>
-        <p>Reserved Usernames: {{ item.reserved_usernames | join(", ") }}</p>
-        <p>Present Usernames: {{ item.present_usernames | join(", ") }}</p>
-        <hr>
+    <div class="container my-4">
+        <h1 class="text-center mb-4">Classes Info</h1>
+        <table class="table table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Class Title</th>
+                    <th>Reserved Usernames</th>
+                    <th>Present Usernames</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.class_title }}</td>
+                    <td>{{ item.reserved_usernames | join(", ") }}</td>
+                    <td>{{ item.present_usernames | join(", ") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endfor %}
 </body>
 </html>
