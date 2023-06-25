@@ -1,6 +1,8 @@
 import requests
 import json
-from datetime import date
+from datetime import date,datetime
+import os
+import pytz
 
 class SpynProAPI:
 
@@ -38,7 +40,9 @@ class SpynProAPI:
 
     def fetch_users(self):
         final_result = []
-        date_today = date.today().strftime('%d-%m-%Y')  # Adjust the format according to your requirement
+        ist = pytz.timezone('Asia/Kolkata')
+        date_today_ist = datetime.now(ist).strftime('%d-%m-%Y')
+        date_today = date_today_ist  # Adjust the format according to your requirement
         for class_id, title in self.class_id_title_map.items():
             attendance_url = f'{self.base_url}/proattendance/view?venue_id=9629&date={date_today}&subscription_id=&class_id%5B0%5D={class_id}'
             response = requests.get(attendance_url, headers=self.headers)
