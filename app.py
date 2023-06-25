@@ -59,7 +59,7 @@ class SpynProAPI:
     def print_data(self):
         print(json.dumps(self.filtered_data, indent=4))
 
-spyn_pro_api = SpynProAPI(os.getenv('user'), os.getenv('pass'))
+spyn_pro_api = SpynProAPI('deepanshu09@gmail.com', 'Sagar09@')
 spyn_pro_api.fetch_active_classes()
 spyn_pro_api.fetch_users()
 spyn_pro_api.print_data()
