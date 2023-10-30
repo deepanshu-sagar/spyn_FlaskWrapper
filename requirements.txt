@@ -2,3 +2,4 @@ flask
 requests
 gunicorn==20.1.0
 pytz
+flask_cors
