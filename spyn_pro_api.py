@@ -75,5 +75,9 @@ def fetch_data():
     data = spyn_pro_api.get_data()
     return jsonify(data)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
