@@ -1,9 +1,14 @@
+from flask import Flask, jsonify
 import requests
 import json
-from datetime import date,datetime
-import os
+from datetime import datetime
 import pytz
+from flask_cors import CORS
 
+app = Flask(__name__)
+CORS(app) 
+
+# Your class code here, with minor modifications
 class SpynProAPI:
 
     def __init__(self, email, password):
@@ -31,7 +36,7 @@ class SpynProAPI:
         response = requests.request("POST", login_url, headers=self.headers, data=payload)
         self.accessToken = response.json()['accessToken']
         self.headers['WWW-Authenticate'] = f'{self.accessToken}'
-
+        
     def fetch_active_classes(self):
         classes_url = f"{self.base_url}/proclass/index?venue_id=9629&page=1&plan_id=&skills=&location=&day=&class_time=&age=&level=&start_time=&end_time=&q=&enrolled_count_from_date=19%20Jun%202023&enrolled_count_end_date=19%20Jun%202023"
         response = requests.get(classes_url, headers=self.headers)
@@ -58,11 +63,17 @@ class SpynProAPI:
             })
 
         self.filtered_data = [entry for entry in final_result if entry["reserved_usernames"] or entry["present_usernames"]]
+        
+    def get_data(self):
+        self.fetch_active_classes()
+        self.fetch_users()
+        return self.filtered_data
 
-    def print_data(self):
-        print(json.dumps(self.filtered_data, indent=4))
+@app.route('/fetch_data', methods=['GET'])
+def fetch_data():
+    spyn_pro_api = SpynProAPI('deepanshu09@gmail.com', 'Sagar09@')
+    data = spyn_pro_api.get_data()
+    return jsonify(data)
 
-spyn_pro_api = SpynProAPI('deepanshu09@gmail.com', 'Sagar09@')
-spyn_pro_api.fetch_active_classes()
-spyn_pro_api.fetch_users()
-spyn_pro_api.print_data()
+if __name__ == '__main__':
+    app.run(debug=True)
