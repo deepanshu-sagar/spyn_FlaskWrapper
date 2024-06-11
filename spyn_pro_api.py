@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template_string, request
 import requests
 import json
 from datetime import datetime, timedelta
@@ -9,7 +9,6 @@ app = Flask(__name__)
 CORS(app)
 
 class SpynProAPI:
-
     def __init__(self, email, password):
         self.base_url = 'https://proapp.spyn.co/api/web/v4'
         self.headers = {
@@ -46,16 +45,14 @@ class SpynProAPI:
         final_result = []
         ist = pytz.timezone('Asia/Kolkata')
         date_today_ist = target_date.strftime('%d-%m-%Y')
-        date_today = date_today_ist
         for class_id, title in self.class_id_title_map.items():
-            attendance_url = f'{self.base_url}/proattendance/view?venue_id=9629&date={date_today}&subscription_id=&class_id%5B0%5D={class_id}'
+            attendance_url = f'{self.base_url}/proattendance/view?venue_id=9629&date={date_today_ist}&subscription_id=&class_id%5B0%5D={class_id}'
             response = requests.get(attendance_url, headers=self.headers)
             re_usernames = [subscriber['username'] for subscriber in response.json().get('reserve_subscriber', [])]
             pr_usernames = [subscriber['username'] for subscriber in response.json().get('present_subscriber', [])]
 
-            # Format the response
             final_result.append({
-                'date': date_today,
+                'date': date_today_ist,
                 'class_title': title,
                 'reserved_usernames': re_usernames,
                 'present_usernames': pr_usernames,
@@ -81,7 +78,122 @@ def fetch_data():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template_string("""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpynPro Classes Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        tr:hover {
+            background-color: #f0dbdb;
+        }
+        @media screen and (max-width: 600px) {
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+        }
+        .separator {
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+        }
+        th, td {
+            border-right: 1px solid #ddd;
+        }
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>SpynPro Classes Data</h2>
+        <div id="tablesContainer"></div>
+    </div>
+    <script>
+        function fetchData() {
+            fetch('/fetch_data')
+                .then(response => response.json())
+                .then(data => {
+                    const dates = [...new Set(data.map(entry => entry.date))];
+                    let html = '';
+                    dates.forEach(date => {
+                        html += `<div class="separator">Data for ${date}</div>`;
+                        html += `<table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Class</th>
+                                            <th>Reserved Names</th>
+                                            <th>Present Names</th>
+                                            <th>Count (Reserved + Present)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        data.filter(entry => entry.date === date).forEach(entry => {
+                            html += `<tr>
+                                        <td>${entry.date}</td>
+                                        <td>${entry.class_title}</td>
+                                        <td>${entry.reserved_usernames.join(', ')}</td>
+                                        <td>${entry.present_usernames.join(', ')}</td>
+                                        <td>${entry.reserved_usernames.length + entry.present_usernames.length}</td>
+                                     </tr>`;
+                        });
+                        html += `</tbody></table>`;
+                    });
+                    document.getElementById('tablesContainer').innerHTML = html;
+                });
+        }
+
+        // Fetch data on page load
+        fetchData();
+
+        // Refresh data every 1 minute (60,000 milliseconds)
+        setInterval(fetchData, 60000);
+    </script>
+</body>
+</html>
+""")
 
 if __name__ == '__main__':
     app.run(debug=True)
