@@ -71,7 +71,7 @@
     </div>
     <script>
         function fetchData() {
-            fetch('https://spyn-flaskwrapper.onrender.com/fetch_data')
+            fetch('http://127.0.0.1:8000/fetch_data')
                 .then(response => response.json())
                 .then(data => {
                     const dates = [...new Set(data.map(entry => entry.date))];
