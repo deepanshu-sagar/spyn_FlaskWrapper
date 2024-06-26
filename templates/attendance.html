@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Today's Attendance</title>
+    <meta http-equiv="refresh" content="300">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        table {
+            width: 120%;
+            max-width: 1500px;
+            border-collapse: collapse;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dddddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .attendance-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 20px;
+            background-color: #606060;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .attendance-button:hover {
+            background-color: #45a049;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 4px;
+            line-height: 1.6;
+        }
+        
+        /* Loading screen style */
+        #loading {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: white url('/static/loader.gif') no-repeat center center;
+        z-index: 1000;
+        display: none;  /* Change this as needed based on your JavaScript setup */
+    }
+
+    </style>
+</head>
+<body onload="hideLoadingScreen();">
+    <div id="loading"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Class</th>
+                <th>Present Names</th>
+                <th>Reserved Names</th>
+                <th>Attendance</th>  <!-- Column name for Attendance -->
+                <!-- <th>Subscription IDs</th>
+                <th>Timing IDs</th>
+                <th>Class IDs</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.date }}</td>
+                <td>{{ row.class_title }}</td>
+                <td>{{ row.present_usernames | join(', ') }}</td> 
+                <td>
+                    <ul>
+                    {% for name in row.reserved_usernames %}
+                        <li>{{ loop.index }}. {{ name }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                
+                <td>
+                    <ul>
+                        {% for name in row.reserved_usernames %}
+                            <li>
+                                <button class="attendance-button" onclick="markAttendance('{{ name }}', '{{ row.class_title }}', '{{ row.date }}', '{{ row.subscription_id_sids[loop.index0] if row.subscription_id_sids else '' }}', '{{ row.timing_ids[loop.index0] if row.timing_ids else '' }}', '{{ row.class_ids[loop.index0] if row.class_ids else '' }}')">P</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <!-- <td>
+                    <ul>
+                    {% for sid in row.subscription_id_sids %}
+                        <li>{{ sid }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                    {% for tid in row.timing_ids %}
+                        <li>{{ tid }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                    {% for cid in row.class_ids %}
+                        <li>{{ cid }}</li>
+                    {% endfor %}
+                    </ul>
+                </td> -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    
+
+    <script>
+        function markAttendance(userName, classTitle, date, sid, timingId, classId) {
+            const payload = {
+                mark_data: JSON.stringify([{
+                    sid: sid,
+                    timing_id: timingId,
+                    status: "P",
+                    session_deducted: "yes",
+                    assign_makeup: "no"
+                }]),
+                venue_id: "9629",
+                date: date,  // Use date directly without replacing characters
+                class_id: classId
+            };
+    
+            fetch('/mark_attendance_post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json, text/plain, */*'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                alert(userName + ' marked as present in ' + classTitle + ' on ' + date);
+                fetch('/mark_attendance')
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        document.getElementById('loading').style.display = 'block';  // Show loading screen when document starts loading
+
+        function hideLoadingScreen() {
+            document.getElementById('loading').style.display = 'none';  // Hide loading when page is fully loaded
+        }
+
+    </script>
+    
+</body>
+</html>
